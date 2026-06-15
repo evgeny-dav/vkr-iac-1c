@@ -1,7 +1,7 @@
 ---
-- name: Copy 1C server distribution to remote host
-  copy:
-    src: "files/{{ archive_1c }}"
+- name: Download 1C distribution from Object Storage
+  get_url:
+    url: "https://storage.yandexcloud.net/vkr-1c-distrib/server64_8_3_27_2130.tar.gz"
     dest: "/tmp/{{ archive_1c }}"
     mode: '0644'
 

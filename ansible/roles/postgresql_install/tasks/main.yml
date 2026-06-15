@@ -1,19 +1,7 @@
 ---
-- name: Kill unattended-upgrades process
+- name: Kill unattended-upgrades and free dpkg lock
   shell: |
     killall unattended-upgr 2>/dev/null || true
-    rm -f /var/cache/apt/archives/lock
-  changed_when: false
-
-- name: Stop unattended-upgrades service
-  systemd:
-    name: unattended-upgrades
-    state: stopped
-  ignore_errors: yes
-
-- name: Force remove all apt locks
-  shell: |
-    killall apt-get apt dpkg 2>/dev/null || true
     rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock
     dpkg --configure -a
   changed_when: false
@@ -31,9 +19,9 @@
   environment:
     DEBIAN_FRONTEND: noninteractive
 
-- name: Copy PostgreSQL 1C archive to server
-  copy:
-    src: "files/{{ pg_archive }}"
+- name: Download PostgreSQL archive from Object Storage
+  get_url:
+    url: "https://storage.yandexcloud.net/vkr-1c-distrib/postgresql_14.22_1_ubuntu_22.04_x86_64_package.tar.bz2"
     dest: "/tmp/{{ pg_archive }}"
     mode: '0644'
 
@@ -48,7 +36,7 @@
   args:
     executable: /bin/bash
 
-- name: Install PostgreSQL 1C packages (or skip if already installed)
+- name: Install PostgreSQL 1C packages
   shell: |
     cd /tmp/postgresql-distrib-1c
     apt-get install -y --allow-downgrades \
