@@ -1,0 +1,4 @@
+~/.yc/
+.terraform/
+terraform.tfvars
+*.tfstate*

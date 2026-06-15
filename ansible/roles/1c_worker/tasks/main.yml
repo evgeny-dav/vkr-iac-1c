@@ -1,0 +1,17 @@
+---
+- name: Install 1C server (same as main)
+  include_role:
+    name: 1c_platform
+
+- name: Add worker to cluster
+  vars:
+    main_host: "{{ hostvars[groups['1c_server'][0]]['ansible_host'] }}"
+  shell: |
+    /opt/1cv8/x86_64/{{ ver_1c }}/rac server insert \
+      --cluster={{ cluster_id }} \
+      --agent-host={{ ansible_host }} \
+      --name="Worker-{{ ansible_hostname }}" \
+      --agent-port=1540 \
+      --port-range=1660:1691 \
+      --using=normal \
+      localhost 1545

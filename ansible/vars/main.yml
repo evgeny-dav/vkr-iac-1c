@@ -1,0 +1,19 @@
+# Версия платформы 1С
+ver_1c: "8.3.27.2130"
+
+# Имя архива с дистрибутивом 1С
+archive_1c: "server64_8_3_27_2130.tar.gz"
+installer_1c: "setup-full-8.3.27.2130-x86_64.run"
+
+# PostgreSQL из архива 1С
+pg_archive: "postgresql_14.22_1_ubuntu_22.04_x86_64_package.tar.bz2"
+pg_version: "14"
+
+# Параметры базы данных
+db_name: "1c_database"
+db_user: "user1c"
+db_password: "SecurePass123!"
+
+# Кластер 1С без пароля
+cluster_admin: ""
+cluster_password: ""

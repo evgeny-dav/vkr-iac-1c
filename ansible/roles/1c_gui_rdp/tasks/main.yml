@@ -1,0 +1,61 @@
+---
+- name: Install XFCE and xrdp
+  apt:
+    name:
+      - xfce4
+      - xfce4-goodies
+      - xrdp
+    state: present
+    update_cache: yes
+
+- name: Set XFCE as default session for xrdp
+  shell: echo "xfce4-session" > /home/ubuntu/.xsession
+  args:
+    executable: /bin/bash
+
+- name: Set permissions for .xsession
+  file:
+    path: /home/ubuntu/.xsession
+    owner: ubuntu
+    group: ubuntu
+
+- name: Enable and start xrdp
+  systemd:
+    name: xrdp
+    enabled: yes
+    state: started
+
+- name: Show password setup instruction
+  debug:
+    msg:
+      - "============================================="
+      - "Задайте пароль для пользователя ubuntu (для RDP):"
+      - "ssh ubuntu@{{ ansible_host }} 'sudo passwd ubuntu'"
+      - "============================================="
+
+- name: Show RDP connection info
+  debug:
+    msg:
+      - "============================================="
+      - "RDP-сервер установлен и запущен"
+      - "Подключитесь к {{ ansible_host }}:3389 через Удаленный рабочий стол Windows"
+      - "Логин: ubuntu"
+      - "============================================="
+
+- name: Show license activation instructions
+  debug:
+    msg:
+      - "============================================="
+      - "ДЛЯ АКТИВАЦИИ КОМЬЮНИТИ ЛИЦЕНЗИИ:"
+      - "1. Подключитесь к серверу по RDP ({{ ansible_host }}:3389)"
+      - "2. Запустите клиент 1С: /opt/1cv8/x86_64/{{ ver_1c }}/1cv8"
+      - "3. В меню выберите: Настройка → Лицензии → Получить лицензию"
+      - "4. Выберите 'Серверная лицензия для разработчиков'"
+      - "5. Следуйте инструкциям мастера активации"
+      - "6. После активации выполните в терминале:"
+      - "   sudo cp /home/ubuntu/.1cv8/1C/1cv8/licenses/*.lic /var/1cv8/licenses/"
+      - "   sudo chown -R usr1cv8:usr1cv8 /var/1cv8/licenses"
+      - "7. Перезапустите сервер 1С:"
+      - "   sudo killall -9 ragent rphost rmngr 2>/dev/null"
+      - "   sudo /opt/1cv8/x86_64/{{ ver_1c }}/ragent -daemon"
+      - "============================================="

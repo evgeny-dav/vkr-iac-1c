@@ -1,0 +1,54 @@
+---
+- name: Install python3-psycopg2
+  apt:
+    name: python3-psycopg2
+    state: present
+    update_cache: yes
+
+- name: Install language-pack-ru
+  apt:
+    name: language-pack-ru
+    state: present
+
+- name: Generate Russian locale
+  shell: locale-gen ru_RU.UTF-8 && update-locale LANG=ru_RU.UTF-8
+  changed_when: false
+
+- name: Restart PostgreSQL to pick up new locale
+  systemd:
+    name: "{{ pg_service.stdout | default('postgresql') }}"
+    state: restarted
+
+- name: Find PostgreSQL config path
+  shell: |
+    find /etc/postgresql -name "postgresql.conf" -type f 2>/dev/null | head -1
+  register: pg_conf_path
+
+- name: Set listen_addresses
+  lineinfile:
+    path: "{{ pg_conf_path.stdout }}"
+    regexp: "^#?listen_addresses"
+    line: "listen_addresses = '*'"
+  notify: restart postgresql
+
+- name: Find pg_hba.conf path
+  shell: |
+    find /etc/postgresql -name "pg_hba.conf" -type f 2>/dev/null | head -1
+  register: pg_hba_path
+
+- name: Configure pg_hba.conf
+  lineinfile:
+    path: "{{ pg_hba_path.stdout }}"
+    line: "host all all 0.0.0.0/0 md5"
+  notify: restart postgresql
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Create 1C database user
+  become_user: postgres
+  postgresql_user:
+    name: "{{ db_user }}"
+    password: "{{ db_password }}"
+    role_attr_flags: SUPERUSER
+    state: present

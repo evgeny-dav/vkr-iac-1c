@@ -1,0 +1,86 @@
+---
+- name: Copy 1C server distribution to remote host
+  copy:
+    src: "files/{{ archive_1c }}"
+    dest: "/tmp/{{ archive_1c }}"
+    mode: '0644'
+
+- name: Create directory for extraction
+  file:
+    path: /tmp/1c_distr
+    state: directory
+    mode: '0755'
+
+- name: Extract distribution archive
+  unarchive:
+    src: "/tmp/{{ archive_1c }}"
+    dest: "/tmp/1c_distr"
+    remote_src: yes
+
+- name: Make installer executable
+  file:
+    path: "/tmp/1c_distr/{{ installer_1c }}"
+    mode: '0755'
+
+- name: Install 1C server in silent mode
+  shell: |
+    cd /tmp/1c_distr
+    ./{{ installer_1c }} --mode unattended --enable-components server,ws
+  args:
+    executable: /bin/bash
+
+- name: Create necessary service directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: usr1cv8
+    group: usr1cv8
+    mode: '0755'
+  loop:
+    - /opt/1cv8
+    - /var/log/1cv8
+    - /home/usr1cv8/.1cv8
+
+- name: Create systemd service for ragent
+  copy:
+    dest: /etc/systemd/system/ragent.service
+    content: |
+      [Unit]
+      Description=1C:Enterprise Server Agent
+      After=network.target
+
+      [Service]
+      Type=forking
+      User=usr1cv8
+      Group=usr1cv8
+      ExecStart=/opt/1cv8/x86_64/{{ ver_1c }}/ragent -daemon -port 1540 -regport 1541 -range 1560:1591
+      ExecStop=/bin/killall -9 ragent
+      Restart=on-failure
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+
+- name: Create systemd service for RAS
+  copy:
+    dest: /etc/systemd/system/ras.service
+    content: |
+      [Unit]
+      Description=1C:Enterprise Remote Administration Server
+      After=ragent.service
+
+      [Service]
+      Type=simple
+      ExecStart=/opt/1cv8/x86_64/{{ ver_1c }}/ras cluster --port=1545
+      Restart=on-failure
+
+      [Install]
+      WantedBy=multi-user.target
+    mode: '0644'
+
+- name: Enable and start services
+  shell: |
+    systemctl daemon-reload
+    systemctl enable ragent.service ras.service
+    systemctl start ragent.service ras.service
+  changed_when: true

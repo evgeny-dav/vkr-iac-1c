@@ -1,0 +1,21 @@
+---
+- name: Настройка сервера базы данных
+  hosts: db_server
+  become: yes
+  vars_files:
+    - vars/main.yml
+  roles:
+    - postgresql_install
+    - postgresql_config
+
+- name: Настройка сервера 1С
+  hosts: 1c_server
+  become: yes
+  vars_files:
+    - vars/main.yml
+  roles:
+    - 1c_prerequisites
+    - 1c_platform
+    - 1c_infobase
+    - 1c_web_console
+    - 1c_gui_rdp

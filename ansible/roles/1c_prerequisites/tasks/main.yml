@@ -1,0 +1,43 @@
+---
+- name: Update APT cache
+  apt:
+    update_cache: yes
+  ignore_errors: yes
+
+- name: Install required system packages
+  apt:
+    name:
+      - fontconfig
+      - libgtk-3-0
+      - libenchant-2-2
+      - libharfbuzz0b
+      - libgstreamer1.0-0
+      - libgstreamer-plugins-base1.0-0
+      - libsecret-1-0
+      - libsoup2.4-1
+      - libgl1-mesa-glx
+      - libglib2.0-0
+      - libodbc1
+      - unixodbc
+      - imagemagick
+      - unzip
+      - language-pack-ru
+    state: present
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: Generate Russian locale
+  locale_gen:
+    name: ru_RU.UTF-8
+    state: present
+
+- name: Set timezone to Europe/Moscow
+  timezone:
+    name: Europe/Moscow
+
+- name: Create 1C service user
+  user:
+    name: usr1cv8
+    system: yes
+    create_home: yes
+    home: /home/usr1cv8

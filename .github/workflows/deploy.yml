@@ -1,0 +1,55 @@
+name: Deploy 1C Cluster
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6"
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo '${{ secrets.SSH_PRIVATE_KEY }}' > ~/.ssh/yc_key
+          chmod 600 ~/.ssh/yc_key
+
+      - name: Setup Yandex Cloud key
+        run: |
+          mkdir -p ~/.yc
+          echo '${{ secrets.YC_KEY }}' > ~/.yc/vkr-key.json
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: terraform
+        env:
+          TF_VAR_cloud_id: ${{ secrets.YC_CLOUD_ID }}
+          TF_VAR_folder_id: ${{ secrets.YC_FOLDER_ID }}
+
+      - name: Wait for servers
+        run: sleep 60
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+
+      - name: Run Ansible
+        run: ansible-playbook -i inventory.ini site.yml
+        working-directory: ansible
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: False

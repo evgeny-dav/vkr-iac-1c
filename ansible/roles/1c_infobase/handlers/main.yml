@@ -1,0 +1,6 @@
+---
+- name: restart 1c server
+  systemd:
+    name: srv1cv8-{{ ver_1c }}@default.service
+    state: restarted
+  ignore_errors: yes

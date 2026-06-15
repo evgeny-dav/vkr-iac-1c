@@ -1,0 +1,70 @@
+---
+- name: Kill unattended-upgrades and free dpkg lock
+  shell: |
+    killall unattended-upgr 2>/dev/null || true
+    rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock
+    dpkg --configure -a
+  changed_when: false
+
+- name: Install Apache web server
+  apt:
+    name: apache2
+    state: present
+    update_cache: yes
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: Ensure Apache is running
+  systemd:
+    name: apache2
+    state: started
+    enabled: yes
+
+- name: Publish 1C cluster console
+  shell: |
+    /opt/1cv8/x86_64/{{ ver_1c }}/webinst \
+      -publish \
+      -apache24 \
+      -wsdir cluster_console \
+      -dir /var/www/html/cluster_console \
+      -connstr "Srvr=localhost;Ref=dev_db;"
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+
+- name: Publish infobase dev_db
+  shell: |
+    /opt/1cv8/x86_64/{{ ver_1c }}/webinst \
+      -publish \
+      -apache24 \
+      -wsdir dev_db \
+      -dir /var/www/html/dev_db \
+      -connstr "Srvr=localhost;Ref=dev_db;"
+  args:
+    executable: /bin/bash
+  ignore_errors: yes
+
+- name: Set permissions for web directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+    recurse: yes
+  loop:
+    - /var/www/html/cluster_console
+    - /var/www/html/dev_db
+
+- name: Restart Apache
+  systemd:
+    name: apache2
+    state: restarted
+
+- name: Show access URLs
+  debug:
+    msg:
+      - "============================================="
+      - "Веб-консоль кластера: http://{{ ansible_host }}/cluster_console"
+      - "Информационная база: http://{{ ansible_host }}/dev_db"
+      - "============================================="

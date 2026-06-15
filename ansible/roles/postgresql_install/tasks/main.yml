@@ -1,0 +1,80 @@
+---
+- name: Kill unattended-upgrades process
+  shell: |
+    killall unattended-upgr 2>/dev/null || true
+    rm -f /var/cache/apt/archives/lock
+  changed_when: false
+
+- name: Stop unattended-upgrades service
+  systemd:
+    name: unattended-upgrades
+    state: stopped
+  ignore_errors: yes
+
+- name: Force remove all apt locks
+  shell: |
+    killall apt-get apt dpkg 2>/dev/null || true
+    rm -f /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock
+    dpkg --configure -a
+  changed_when: false
+
+- name: Install bzip2
+  apt:
+    name: bzip2
+    state: present
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: Copy PostgreSQL 1C archive to server
+  copy:
+    src: "files/{{ pg_archive }}"
+    dest: "/tmp/{{ pg_archive }}"
+    mode: '0644'
+
+- name: Create extraction directory
+  file:
+    path: /tmp/postgresql-distrib-1c
+    state: directory
+
+- name: Extract PostgreSQL 1C archive
+  shell: |
+    tar --extract --directory /tmp/postgresql-distrib-1c --file /tmp/{{ pg_archive }}
+  args:
+    executable: /bin/bash
+
+- name: Install PostgreSQL 1C packages (or skip if already installed)
+  shell: |
+    cd /tmp/postgresql-distrib-1c
+    apt-get install -y --allow-downgrades \
+      ./libecpg6_14.*_amd64.deb \
+      ./libecpg-compat3_14.*_amd64.deb \
+      ./libpgtypes3_14.*_amd64.deb \
+      ./libpq5_14.*_amd64.deb \
+      ./postgresql-client-14_14.*_amd64.deb \
+      ./postgresql-14_14.*_amd64.deb \
+      ./postgresql-client-common_*.deb \
+      ./postgresql-common_*.deb \
+      ./postgresql-common-dev_*.deb
+  args:
+    executable: /bin/bash
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  ignore_errors: yes
+
+- name: Find PostgreSQL service
+  shell: |
+    systemctl list-units --type=service | grep postgres | awk '{print $1}' | head -1
+  register: pg_service
+
+- name: Ensure PostgreSQL is running
+  systemd:
+    name: "{{ pg_service.stdout }}"
+    state: started
+    enabled: yes
+  when: pg_service.stdout != ""

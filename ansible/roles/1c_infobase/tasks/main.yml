@@ -1,0 +1,57 @@
+---
+- name: Wait for 1C server agent
+  wait_for:
+    port: 1540
+    timeout: 60
+
+- name: Start RAS service
+  shell: |
+    killall ras 2>/dev/null || true
+    sleep 1
+    nohup /opt/1cv8/x86_64/{{ ver_1c }}/ras cluster --port=1545 > /tmp/ras.log 2>&1 &
+    for i in $(seq 1 10); do
+      if ss -tlnp | grep -q 1545; then
+        echo "RAS started"
+        break
+      fi
+      sleep 1
+    done
+  changed_when: true
+
+- name: Wait for RAS to be ready
+  wait_for:
+    port: 1545
+    timeout: 30
+
+- name: Get cluster UUID
+  shell: |
+    /opt/1cv8/x86_64/{{ ver_1c }}/rac cluster list localhost 1545 | grep -oP 'cluster\s*:\s*\K[0-9a-f-]+'
+  register: cluster_id
+
+- name: Show cluster UUID
+  debug:
+    msg: "Кластер 1С: {{ cluster_id.stdout }}"
+
+- name: Create infobase
+  vars:
+    db_host: "{{ hostvars[groups['db_server'][0]]['ansible_host'] }}"
+  shell: |
+    /opt/1cv8/x86_64/{{ ver_1c }}/rac infobase \
+      --cluster={{ cluster_id.stdout }} \
+      create \
+      --create-database \
+      --name=dev_db \
+      --dbms=PostgreSQL \
+      --db-server="{{ db_host }}" \
+      --db-name=dev_db_1c \
+      --locale=ru \
+      --db-user={{ db_user }} \
+      --db-pwd={{ db_password }} \
+      --descr="Тестовая база ВКР" \
+      localhost 1545
+  register: infobase_create
+  ignore_errors: yes
+
+- name: Show result
+  debug:
+    msg: "{{ infobase_create.stdout | default('Готово') }}"

@@ -1,0 +1,5 @@
+---
+- name: restart postgresql
+  systemd:
+    name: "{{ pg_service.stdout | default('postgresql') }}"
+    state: restarted
