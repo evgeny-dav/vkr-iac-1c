@@ -85,7 +85,7 @@ resource "yandex_compute_instance" "server_1c" {
 
 # Дополнительные рабочие серверы 1С
 resource "yandex_compute_instance" "server_1c_worker" {
-  count       = 1
+  count       = 0
   name        = "iac-1c-worker-${count.index}"
   platform_id = "standard-v3"
 
