@@ -13,21 +13,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.6"
-
-      - name: Setup SSH key
+      - name: Setup SSH keys
         run: |
           mkdir -p ~/.ssh
           echo '${{ secrets.SSH_PRIVATE_KEY }}' > ~/.ssh/yc_key
+          echo '${{ secrets.SSH_PUBLIC_KEY }}' > ~/.ssh/yc_key.pub
           chmod 600 ~/.ssh/yc_key
 
       - name: Setup Yandex Cloud key
         run: |
           mkdir -p ~/.yc
           echo '${{ secrets.YC_KEY }}' > ~/.yc/vkr-key.json
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6"
 
       - name: Terraform Init
         run: terraform init
