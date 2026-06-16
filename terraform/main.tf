@@ -7,6 +7,17 @@ terraform {
       source = "hashicorp/local"
     }
   }
+
+  backend "s3" {
+    endpoint   = "storage.yandexcloud.net"
+    bucket     = "vkr-tfstate"
+    key        = "terraform.tfstate"
+    region     = "ru-central1"
+
+    skip_region_validation      = true
+    skip_credentials_validation = true
+    skip_requesting_account_id  = true
+  }
 }
 
 provider "yandex" {
@@ -16,12 +27,10 @@ provider "yandex" {
   service_account_key_file = pathexpand("~/.yc/vkr-key.json")
 }
 
-# Ищем существующую сеть
 data "yandex_vpc_network" "network_1c" {
   network_id = "enp3vdhvfim37s958qa5"
 }
 
-# Ищем существующую подсеть
 data "yandex_vpc_subnet" "subnet_1c" {
   subnet_id = "e9b6o15mbb647mqjdqdi"
 }
@@ -115,19 +124,4 @@ resource "local_file" "ansible_inventory" {
     worker_ips = yandex_compute_instance.server_1c_worker[*].network_interface[0].nat_ip_address
   })
   filename = "../ansible/inventory.ini"
-}
-
-terraform {
-  backend "s3" {
-    endpoint   = "storage.yandexcloud.net"
-    bucket     = "vkr-tfstate"
-    key        = "terraform.tfstate"
-    region     = "ru-central1"
-    access_key = "YCAJECEXAfrDOHRUFHtVjFPUf"
-    secret_key = "YCPJWp7cvC7BS7dWzeXfPs9goVoIbj9zvHysVnnh"
-
-    skip_region_validation      = true
-    skip_credentials_validation = true
-    skip_requesting_account_id  = true
-  }
 }
