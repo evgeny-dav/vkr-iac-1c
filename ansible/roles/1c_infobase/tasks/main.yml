@@ -4,6 +4,10 @@
     port: 1540
     timeout: 60
 
+- name: Restart PostgreSQL on DB server to pick up locale
+  shell: ssh ubuntu@{{ hostvars[groups['db_server'][0]]['ansible_host'] }} "sudo systemctl restart postgresql"
+  ignore_errors: yes
+
 - name: Get cluster UUID
   shell: |
     /opt/1cv8/x86_64/{{ ver_1c }}/rac cluster list localhost 1545 | grep -oP 'cluster\s*:\s*\K[0-9a-f-]+'
