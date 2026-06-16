@@ -13,8 +13,3 @@ variable "ssh_public_key" {
   type        = string
   default     = "~/.ssh/yc_key.pub"
 }
-variable "token" {
-  description = "Yandex Cloud IAM token"
-  type        = string
-  sensitive   = true
-}
