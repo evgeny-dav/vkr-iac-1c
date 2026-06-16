@@ -16,9 +16,20 @@ jobs:
       - name: Setup SSH keys
         run: |
           mkdir -p ~/.ssh
-          printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/yc_key
-          printf '%s' "${{ secrets.SSH_PUBLIC_KEY }}" > ~/.ssh/yc_key.pub
+          cat > ~/.ssh/yc_key << 'SSHKEY'
+          ${{ secrets.SSH_PRIVATE_KEY }}
+          SSHKEY
+          cat > ~/.ssh/yc_key.pub << 'SSHPUB'
+          ${{ secrets.SSH_PUBLIC_KEY }}
+          SSHPUB
           chmod 600 ~/.ssh/yc_key
+
+      - name: Setup Yandex Cloud key
+        run: |
+          mkdir -p ~/.yc
+          cat > ~/.yc/vkr-key.json << 'YCKEY'
+          ${{ secrets.YC_KEY }}
+          YCKEY
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -29,7 +40,8 @@ jobs:
         run: terraform init
         working-directory: terraform
         env:
-          TF_VAR_token: ${{ secrets.YC_IAM_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_SECRET_KEY }}
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
@@ -37,7 +49,8 @@ jobs:
         env:
           TF_VAR_cloud_id: ${{ secrets.YC_CLOUD_ID }}
           TF_VAR_folder_id: ${{ secrets.YC_FOLDER_ID }}
-          TF_VAR_token: ${{ secrets.YC_IAM_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_SECRET_KEY }}
 
       - name: Wait for servers
         run: sleep 60
