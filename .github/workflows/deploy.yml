@@ -13,6 +13,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Debug paths
+        run: |
+          echo "Current dir: $(pwd)"
+          echo "Local tfstate exists:"
+          ls -la /root/VKR_IaC_1C/terraform/terraform.tfstate
+          echo "Work dir tfstate:"
+          ls -la terraform/terraform.tfstate 2>/dev/null || echo "NOT FOUND"
+
+      - name: Force copy tfstate
+        run: cp -f /root/VKR_IaC_1C/terraform/terraform.tfstate terraform/terraform.tfstate
+
+      - name: Verify tfstate copied
+        run: cat terraform/terraform.tfstate | grep -o '"name":"iac-1c-[^"]*"'
+
       - name: Terraform Init
         run: terraform init
         working-directory: terraform

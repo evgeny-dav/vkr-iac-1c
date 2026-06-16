@@ -1,0 +1,12 @@
+﻿{
+  "repositoryName": "evgeny-dav/vkr-iac-1c",
+  "pipelineDirectory": "vkr-iac-1c",
+  "workspaceDirectory": "vkr-iac-1c/vkr-iac-1c",
+  "repositories": {
+    "evgeny-dav/vkr-iac-1c": {
+      "repositoryPath": "vkr-iac-1c/vkr-iac-1c",
+      "lastRunOn": "06/16/2026 15:29:04 +03:00"
+    }
+  },
+  "lastRunOn": "06/16/2026 15:32:35 +03:00"
+}
