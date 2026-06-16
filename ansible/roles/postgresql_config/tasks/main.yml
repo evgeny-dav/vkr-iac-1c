@@ -16,7 +16,7 @@
 
 - name: Restart PostgreSQL to pick up new locale
   systemd:
-    name: "{{ pg_service.stdout | default('postgresql') }}"
+    name: postgresql
     state: restarted
 
 - name: Find PostgreSQL config path
