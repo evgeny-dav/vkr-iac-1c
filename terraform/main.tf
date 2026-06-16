@@ -71,7 +71,7 @@ resource "yandex_compute_instance" "server_1c" {
 }
 
 resource "yandex_compute_instance" "server_1c_worker" {
-  count       = 0
+  count       = 1
   name        = "iac-1c-worker-${count.index}"
   platform_id = "standard-v3"
   resources {
