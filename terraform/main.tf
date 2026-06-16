@@ -16,15 +16,14 @@ provider "yandex" {
   service_account_key_file = pathexpand("~/.yc/vkr-key.json")
 }
 
-resource "yandex_vpc_network" "network_1c" {
-  name = "iac-1c-network"
+# Ищем существующую сеть
+data "yandex_vpc_network" "network_1c" {
+  network_id = "enp3vdhvfim37s958qa5"
 }
 
-resource "yandex_vpc_subnet" "subnet_1c" {
-  name           = "iac-1c-subnet"
-  zone           = "ru-central1-a"
-  network_id     = yandex_vpc_network.network_1c.id
-  v4_cidr_blocks = ["10.10.0.0/24"]
+# Ищем существующую подсеть
+data "yandex_vpc_subnet" "subnet_1c" {
+  subnet_id = "e9b6o15mbb647mqjdqdi"
 }
 
 resource "yandex_compute_instance" "db_server" {
@@ -42,7 +41,7 @@ resource "yandex_compute_instance" "db_server" {
     }
   }
   network_interface {
-    subnet_id = yandex_vpc_subnet.subnet_1c.id
+    subnet_id = data.yandex_vpc_subnet.subnet_1c.id
     nat       = true
   }
   metadata = {
@@ -65,7 +64,7 @@ resource "yandex_compute_instance" "server_1c" {
     }
   }
   network_interface {
-    subnet_id = yandex_vpc_subnet.subnet_1c.id
+    subnet_id = data.yandex_vpc_subnet.subnet_1c.id
     nat       = true
   }
   metadata = {
@@ -89,7 +88,7 @@ resource "yandex_compute_instance" "server_1c_worker" {
     }
   }
   network_interface {
-    subnet_id = yandex_vpc_subnet.subnet_1c.id
+    subnet_id = data.yandex_vpc_subnet.subnet_1c.id
     nat       = true
   }
   metadata = {
