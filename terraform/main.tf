@@ -27,86 +27,71 @@ resource "yandex_vpc_subnet" "subnet_1c" {
   v4_cidr_blocks = ["10.10.0.0/24"]
 }
 
-# Сервер базы данных
 resource "yandex_compute_instance" "db_server" {
   name        = "iac-1c-db-server"
   platform_id = "standard-v3"
-
   resources {
     cores         = 2
     memory        = 4
     core_fraction = 100
   }
-
   boot_disk {
     initialize_params {
       image_id = "fd8emvfmfoaordspe1jr"
       size     = 30
     }
   }
-
   network_interface {
     subnet_id = yandex_vpc_subnet.subnet_1c.id
     nat       = true
   }
-
   metadata = {
     ssh-keys = "ubuntu:${file(pathexpand(var.ssh_public_key))}"
   }
 }
 
-# Сервер 1С (основной)
 resource "yandex_compute_instance" "server_1c" {
   name        = "iac-1c-app-server"
   platform_id = "standard-v3"
-
   resources {
     cores         = 4
     memory        = 8
     core_fraction = 100
   }
-
   boot_disk {
     initialize_params {
       image_id = "fd8emvfmfoaordspe1jr"
       size     = 30
     }
   }
-
   network_interface {
     subnet_id = yandex_vpc_subnet.subnet_1c.id
     nat       = true
   }
-
   metadata = {
     ssh-keys = "ubuntu:${file(pathexpand(var.ssh_public_key))}"
   }
 }
 
-# Дополнительные рабочие серверы 1С
 resource "yandex_compute_instance" "server_1c_worker" {
   count       = 0
   name        = "iac-1c-worker-${count.index}"
   platform_id = "standard-v3"
-
   resources {
     cores         = 4
     memory        = 8
     core_fraction = 100
   }
-
   boot_disk {
     initialize_params {
       image_id = "fd8emvfmfoaordspe1jr"
       size     = 30
     }
   }
-
   network_interface {
     subnet_id = yandex_vpc_subnet.subnet_1c.id
     nat       = true
   }
-
   metadata = {
     ssh-keys = "ubuntu:${file(pathexpand(var.ssh_public_key))}"
   }
