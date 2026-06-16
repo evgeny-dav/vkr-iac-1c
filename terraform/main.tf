@@ -116,3 +116,18 @@ resource "local_file" "ansible_inventory" {
   })
   filename = "../ansible/inventory.ini"
 }
+
+terraform {
+  backend "s3" {
+    endpoint   = "storage.yandexcloud.net"
+    bucket     = "vkr-tfstate"
+    key        = "terraform.tfstate"
+    region     = "ru-central1"
+    access_key = "YCAJECEXAfrDOHRUFHtVjFPUf"
+    secret_key = "YCPJWp7cvC7BS7dWzeXfPs9goVoIbj9zvHysVnnh"
+
+    skip_region_validation      = true
+    skip_credentials_validation = true
+    skip_requesting_account_id  = true
+  }
+}
