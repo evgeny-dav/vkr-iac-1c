@@ -1,0 +1,44 @@
+{
+  "version": 4,
+  "terraform_version": "1.15.4",
+  "serial": 71,
+  "lineage": "d6e9e66c-944b-e9ed-b498-8ffdd9917cee",
+  "outputs": {},
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "yandex_vpc_subnet",
+      "name": "subnet_1c",
+      "provider": "provider[\"registry.terraform.io/yandex-cloud/yandex\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "created_at": "2026-05-21T19:11:24Z",
+            "description": "",
+            "dhcp_options": [],
+            "folder_id": "b1gv7cnsqebjnrudr55f",
+            "id": "e9b923p9qgc8senh3t56",
+            "labels": {},
+            "name": "iac-1c-subnet",
+            "network_id": "enps7h9p6itnhq1fi67l",
+            "route_table_id": "",
+            "timeouts": null,
+            "v4_cidr_blocks": [
+              "10.10.0.0/24"
+            ],
+            "v6_cidr_blocks": [],
+            "zone": "ru-central1-a"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxODAwMDAwMDAwMDAsImRlbGV0ZSI6MTgwMDAwMDAwMDAwLCJ1cGRhdGUiOjE4MDAwMDAwMDAwMH19",
+          "dependencies": [
+            "yandex_vpc_network.network_1c"
+          ]
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}

@@ -1,6 +1,5 @@
 ~/.yc/
 .terraform/
 terraform.tfvars
-*.tfstate*
 ansible/files/server64_*.tar.gz
 ansible/files/postgresql_*.tar.bz2
