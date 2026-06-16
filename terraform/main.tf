@@ -7,26 +7,13 @@ terraform {
       source = "hashicorp/local"
     }
   }
-
-  backend "s3" {
-    endpoints = {
-      s3 = "https://storage.yandexcloud.net"
-    }
-    bucket = "vkr-tfstate"
-    key    = "terraform.tfstate"
-    region = "ru-central1"
-
-    skip_region_validation      = true
-    skip_credentials_validation = true
-    skip_requesting_account_id  = true
-  }
 }
 
 provider "yandex" {
-  cloud_id                 = var.cloud_id
-  folder_id                = var.folder_id
-  zone                     = "ru-central1-a"
-  service_account_key_file = pathexpand("~/.yc/vkr-key.json")
+  cloud_id  = var.cloud_id
+  folder_id = var.folder_id
+  zone      = "ru-central1-a"
+  token     = var.token
 }
 
 data "yandex_vpc_network" "network_1c" {
