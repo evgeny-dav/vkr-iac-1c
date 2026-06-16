@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
@@ -18,6 +18,20 @@ jobs:
           mkdir -p ~/.ssh
           echo '${{ secrets.SSH_PRIVATE_KEY }}' > ~/.ssh/yc_key
           chmod 600 ~/.ssh/yc_key
+
+      - name: Setup Yandex Cloud key
+        run: |
+          mkdir -p ~/.yc
+          echo '${{ secrets.YC_KEY }}' > ~/.yc/vkr-key.json
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6"
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
@@ -30,6 +44,11 @@ jobs:
 
       - name: Wait for servers
         run: sleep 60
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
 
       - name: Run Ansible
         run: ansible-playbook -i inventory.ini site.yml
